@@ -27,7 +27,11 @@ namespace Barotrauma
 
             basicEffect = new BasicEffect(graphics) { TextureEnabled = true };
 
+<<<<<<< HEAD
             GameMain.Instance.OnResolutionChanged += () =>
+=======
+            GameMain.Instance.ResolutionChanged += () =>
+>>>>>>> upstream/master
             {
                 InitVertexData();
             };

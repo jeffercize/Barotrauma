@@ -187,7 +187,7 @@ namespace Barotrauma.Items.Components
                 }
                 if (IsActive && item.ParentInventory?.Owner is Character user && user == Character.Controlled)// && Vector2.Distance(newNodePos, nodes[nodes.Count - 1]) > nodeDistance)
                 {
-                    if (user.CanInteract)
+                    if (user.CanInteract && currLength < MaxLength)
                     {
                         Vector2 gridPos = Character.Controlled.Position;
                         Vector2 roundedGridPos = new Vector2(
@@ -413,7 +413,11 @@ namespace Barotrauma.Items.Components
                                 selectedWire.nodes.RemoveAt(closestIndex);
                                 selectedWire.UpdateSections();
                             } 
+<<<<<<< HEAD
                             // if only one end of the wire is disconnected pick it back up with double click
+=======
+                            // if only one end of the wire is disconnect pick it back up with double click
+>>>>>>> upstream/master
                             else if (doubleClicked && equippedWire == null && Character.Controlled != null && selectedWire.connections.Any(conn => conn != null))
                             {
                                 if (selectedWire.connections[0] == null && closestIndex == 0 || selectedWire.connections[1] == null && closestIndex == selectedWire.nodes.Count - 1)

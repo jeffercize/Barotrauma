@@ -160,6 +160,7 @@ namespace Barotrauma.Items.Components
                         }
                     }
                     Discharge();
+
                 }
                 else if (Voltage > MinVoltage)
                 {

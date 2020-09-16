@@ -237,7 +237,7 @@ namespace Barotrauma
 #if SERVER
                 foreach (var traitor in Traitors.Values)
                 {
-                    GameServer.Log($"{GameServer.CharacterLogName(traitor.Character)} is a traitor and the current goals are:\n{(traitor.CurrentObjective?.GoalInfos != null ? TextManager.GetServerMessage(traitor.CurrentObjective?.GoalInfos) : "(empty)")}, and codewords are:{CodeWords} and {CodeResponse}", ServerLog.MessageType.ServerMessage);
+                    GameServer.Log($"{GameServer.CharacterLogName(traitor.Character)} is a traitor and the current goals are:\n{(traitor.CurrentObjective?.GoalInfos != null ? TextManager.GetServerMessage(traitor.CurrentObjective?.GoalInfos) : "(empty)")}", ServerLog.MessageType.ServerMessage);
                 }
 #endif
                 return true;

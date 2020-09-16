@@ -54,7 +54,7 @@ namespace Barotrauma
 #region Creation
         public MainMenuScreen(GameMain game)
         {
-            GameMain.Instance.OnResolutionChanged += () =>
+            GameMain.Instance.ResolutionChanged += () =>
             {
                 if (Selected == this && selectedTab == Tab.Settings)
                 {
@@ -688,13 +688,12 @@ namespace Barotrauma
             if (selectedSub == null)
             {
                 DebugConsole.NewMessage("Loading a random sub.", Color.White);
-                var subs = SubmarineInfo.SavedSubmarines.Where(s => !s.HasTag(SubmarineTag.Shuttle) && !s.HasTag(SubmarineTag.HideInMenus));
+                var subs = SubmarineInfo.SavedSubmarines.Where(s => s.Type == SubmarineType.Player && !s.HasTag(SubmarineTag.Shuttle) && !s.HasTag(SubmarineTag.HideInMenus));
                 selectedSub = subs.ElementAt(Rand.Int(subs.Count()));
             }
             var gamesession = new GameSession(
                 selectedSub,
-                "Data/Saves/test.xml",
-                GameModePreset.List.Find(gm => gm.Identifier == "devsandbox"),
+                GameModePreset.DevSandbox,
                 missionPrefab: null);
             //(gamesession.GameMode as SinglePlayerCampaign).GenerateMap(ToolBox.RandomSeed(8));
             gamesession.StartRound(fixedSeed ? "abcd" : ToolBox.RandomSeed(8), difficulty: 40);
@@ -703,13 +702,6 @@ namespace Barotrauma
             string[] jobIdentifiers = new string[] { "captain", "engineer", "mechanic", "securityofficer", "medicaldoctor" };
             foreach (string job in jobIdentifiers)
             {
-                var spawnPoint = WayPoint.GetRandom(SpawnType.Human, null, Submarine.MainSub, useSyncedRand: true);
-                if (spawnPoint == null)
-                {
-                    DebugConsole.ThrowError("No spawnpoints found in the selected submarine. Quickstart failed.");
-                    GameMain.MainMenuScreen.Select();
-                    return;
-                }
                 var jobPrefab = JobPrefab.Get(job);
                 var variant = Rand.Range(0, jobPrefab.Variants);
                 var characterInfo = new CharacterInfo(CharacterPrefab.HumanSpeciesName, jobPrefab: jobPrefab, variant: variant);
@@ -717,12 +709,19 @@ namespace Barotrauma
                 {
                     DebugConsole.ThrowError("Failed to find the job \"" + job + "\"!");
                 }
+                gamesession.CrewManager.AddCharacterInfo(characterInfo);
+            }
+            gamesession.CrewManager.InitSinglePlayerRound();
+        }
 
-                var newCharacter = Character.Create(CharacterPrefab.HumanSpeciesName, spawnPoint.WorldPosition, ToolBox.RandomSeed(8), characterInfo);
-                newCharacter.GiveJobItems(spawnPoint);
-                gamesession.CrewManager.AddCharacter(newCharacter);
-                Character.Controlled = newCharacter;
-            }         
+        public void SetEnableModsNotification(bool visible)
+        {
+            if (enableModsContainer != null) { enableModsContainer.Visible = visible; }
+        }
+
+        public void SetDownloadingModsNotification(bool visible)
+        {
+            if (downloadingModsContainer != null) { downloadingModsContainer.Visible = visible; }
         }
 
         public void SetEnableModsNotification(bool visible)
@@ -870,7 +869,7 @@ namespace Barotrauma
             }
 #endif
             */
-
+            GameMain.NetLobbyScreen?.Release();
             GameMain.NetLobbyScreen = new NetLobbyScreen();
             try
             {
@@ -1067,11 +1066,8 @@ namespace Barotrauma
 
             selectedSub = new SubmarineInfo(Path.Combine(SaveUtil.TempPath, selectedSub.Name + ".sub"));
             
-            GameMain.GameSession = new GameSession(selectedSub, saveName,
-                GameModePreset.List.Find(g => g.Identifier == "singleplayercampaign"));
-            (GameMain.GameSession.GameMode as CampaignMode).GenerateMap(mapSeed);
-
-            GameMain.LobbyScreen.Select();
+            GameMain.GameSession = new GameSession(selectedSub, saveName, GameModePreset.SinglePlayerCampaign, mapSeed);
+            ((SinglePlayerCampaign)GameMain.GameSession.GameMode).LoadNewLevel();
         }
 
         private void LoadGame(string saveFile)
@@ -1088,8 +1084,8 @@ namespace Barotrauma
                 return;
             }
 
-
-            GameMain.LobbyScreen.Select();
+            //TODO
+            //GameMain.LobbyScreen.Select();
         }
 
         #region UI Methods
@@ -1131,6 +1127,8 @@ namespace Barotrauma
             int port = NetConfig.DefaultPort;
             int queryPort = NetConfig.DefaultQueryPort;
             int maxPlayers = 8;
+            bool karmaEnabled = true;
+            string selectedKarmaPreset = "";
             PlayStyle selectedPlayStyle = PlayStyle.Casual;
             if (File.Exists(ServerSettings.SettingsFile))
             {
@@ -1140,6 +1138,8 @@ namespace Barotrauma
                     port = settingsDoc.Root.GetAttributeInt("port", port);
                     queryPort = settingsDoc.Root.GetAttributeInt("queryport", queryPort);
                     maxPlayers = settingsDoc.Root.GetAttributeInt("maxplayers", maxPlayers);
+                    karmaEnabled = settingsDoc.Root.GetAttributeBool("karmaenabled", true);
+                    selectedKarmaPreset = settingsDoc.Root.GetAttributeString("karmapreset", "default");
                     string playStyleStr = settingsDoc.Root.GetAttributeString("playstyle", "Casual");
                     Enum.TryParse(playStyleStr, out selectedPlayStyle);
                 }
@@ -1319,9 +1319,11 @@ namespace Barotrauma
             foreach (string karmaPreset in tempKarmaManager.Presets.Keys)
             {
                 karmaPresetDD.AddItem(TextManager.Get("KarmaPreset." + karmaPreset), karmaPreset);
-                if (karmaPreset == "default") { karmaPresetDD.SelectItem(karmaPreset); }
+                if (karmaPreset == selectedKarmaPreset) { karmaPresetDD.SelectItem(karmaPreset); }
             }
             if (karmaPresetDD.SelectedIndex == -1) { karmaPresetDD.Select(0); }
+
+            karmaEnabledBox.Selected = karmaEnabled;
 
             tickboxAreaLower.RectTransform.MaxSize = karmaEnabledBox.RectTransform.MaxSize;
 

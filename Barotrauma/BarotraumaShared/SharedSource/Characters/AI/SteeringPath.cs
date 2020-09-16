@@ -79,7 +79,7 @@ namespace Barotrauma
             get
             {
                 if (currentIndex < 0 || currentIndex > nodes.Count - 1) { return null; }
-                return nodes[currentIndex];
+                return nodes[currentIndex]; 
             }
         }
 
@@ -93,7 +93,7 @@ namespace Barotrauma
             get
             {
                 if (currentIndex + 1 < 0 || currentIndex + 1 > nodes.Count - 1) { return null; }
-                return nodes[currentIndex + 1];
+                return nodes[currentIndex+1];
             }
         }
 

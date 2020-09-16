@@ -1,13 +1,28 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+<<<<<<< HEAD
 using Microsoft.Xna.Framework.Input;
+=======
+>>>>>>> upstream/master
 
 namespace Barotrauma
 {
     partial class GameSession
     {
+<<<<<<< HEAD
         public RoundSummary RoundSummary { get; private set; }
         public static bool IsTabMenuOpen => GameMain.GameSession?.tabMenu != null;
         public static TabMenu TabMenuInstance => GameMain.GameSession?.tabMenu;
+=======
+        public RoundSummary RoundSummary
+        {
+            get;
+            private set;
+        }
+
+        public static bool IsTabMenuOpen => GameMain.GameSession?.tabMenu != null;
+        public static TabMenu TabMenuInstance => GameMain.GameSession?.tabMenu;
+
+>>>>>>> upstream/master
 
         private TabMenu tabMenu;
 
@@ -46,8 +61,9 @@ namespace Barotrauma
 
         partial void UpdateProjSpecific(float deltaTime)
         {
-            if (GUI.DisableHUD) return;
+            if (GUI.DisableHUD) { return; }
 
+<<<<<<< HEAD
             if (GameMode.IsRunning)
             {
                 if (tabMenu == null)
@@ -65,11 +81,24 @@ namespace Barotrauma
                     {
                         ToggleTabMenu();
                     }
+=======
+            if (tabMenu == null)
+            {
+                if (PlayerInput.KeyHit(InputType.InfoTab) && GUI.KeyboardDispatcher.Subscriber is GUITextBox == false)
+                {
+                    ToggleTabMenu();
+>>>>>>> upstream/master
                 }
             }
             else
             {
+<<<<<<< HEAD
                 if (tabMenu != null)
+=======
+                tabMenu.Update();
+
+                if (PlayerInput.KeyHit(InputType.InfoTab) && GUI.KeyboardDispatcher.Subscriber is GUITextBox == false)
+>>>>>>> upstream/master
                 {
                     ToggleTabMenu();
                 }
@@ -97,7 +126,10 @@ namespace Barotrauma
 
         public void Draw(SpriteBatch spriteBatch)
         {
+<<<<<<< HEAD
             if (GUI.DisableHUD) return;
+=======
+>>>>>>> upstream/master
             GameMode?.Draw(spriteBatch);
         }
     }

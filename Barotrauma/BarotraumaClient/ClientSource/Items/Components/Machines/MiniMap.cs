@@ -24,7 +24,17 @@ namespace Barotrauma.Items.Components
         partial void InitProjSpecific(XElement element)
         {
             noPowerTip = TextManager.Get("SteeringNoPowerTip");
+            CreateGUI();
+        }
 
+        protected override void OnResolutionChanged()
+        {
+            base.OnResolutionChanged();
+            CreateHUD();
+        }
+
+        protected override void CreateGUI()
+        {
             GuiFrame.RectTransform.RelativeOffset = new Vector2(0.05f, 0.0f);
             GuiFrame.CanBeFocused = true;
             new GUICustomComponent(new RectTransform(GuiFrame.Rect.Size - GUIStyle.ItemFrameMargin, GuiFrame.RectTransform, Anchor.Center) { AbsoluteOffset = GUIStyle.ItemFrameOffset },
@@ -53,7 +63,11 @@ namespace Barotrauma.Items.Components
             hullAirQualityText = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.3f), hullInfoContainer.RectTransform), "") { Wrap = true };
             hullWaterText = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.3f), hullInfoContainer.RectTransform), "") { Wrap = true };
 
-            hullInfoFrame.Children.ForEach(c => { c.CanBeFocused = false; c.Children.ForEach(c2 => c2.CanBeFocused = false); });
+            hullInfoFrame.Children.ForEach(c =>
+            {
+                c.CanBeFocused = false;
+                c.Children.ForEach(c2 => c2.CanBeFocused = false);
+            });
         }
 
         public override void AddToGUIUpdateList()
@@ -72,7 +86,7 @@ namespace Barotrauma.Items.Components
         {
             submarineContainer.ClearChildren();
 
-            if (item.Submarine == null) return;
+            if (item.Submarine == null) { return; }
 
             item.Submarine.CreateMiniMap(submarineContainer);
             displayedSubs.Clear();
@@ -125,10 +139,15 @@ namespace Barotrauma.Items.Components
                                GUI.Style.Orange * (float)Math.Abs(Math.Sin(Timing.TotalTime)), Color.Black * 0.8f, font: GUI.SubHeadingFont);
                 return;
             }
+<<<<<<< HEAD
 
             if (!submarineContainer.Children.Any()) { return; }
 
             foreach (GUIComponent child in submarineContainer.Children.First().Children)
+=======
+            if (!submarineContainer.Children.Any()) { return; }
+            foreach (GUIComponent child in submarineContainer.Children.FirstOrDefault()?.Children)
+>>>>>>> upstream/master
             {
                 if (child.UserData is Hull hull)
                 {
@@ -177,9 +196,25 @@ namespace Barotrauma.Items.Components
             HashSet<Submarine> subs = new HashSet<Submarine>();
             foreach (Hull hull in Hull.hullList)
             {
+<<<<<<< HEAD
                 if (hull.Submarine == null) continue;
                 var hullFrame = submarineContainer.Children.FirstOrDefault()?.FindChild(hull);
                 if (hullFrame == null) continue;
+=======
+                if (hull.Submarine == null) { continue; }
+                var hullFrame = submarineContainer.Children.FirstOrDefault()?.FindChild(hull);
+                if (hullFrame == null) { continue; }
+
+                hullFrame.Visible = true;
+                if (!submarineContainer.Rect.Contains(hullFrame.Rect))
+                {
+                    if (hull.Submarine.Info.Type != SubmarineType.Player) 
+                    {
+                        hullFrame.Visible = false;
+                        continue; 
+                    }
+                }
+>>>>>>> upstream/master
 
                 hullDatas.TryGetValue(hull, out HullData hullData);
                 if (hullData == null)
@@ -294,7 +329,7 @@ namespace Barotrauma.Items.Components
             
             foreach (Submarine sub in subs)
             {
-                if (sub.HullVertices == null) { continue; }
+                if (sub.HullVertices == null || sub.Info.IsOutpost) { continue; }
                 
                 Rectangle worldBorders = sub.GetDockedBorders();
                 worldBorders.Location += sub.WorldPosition.ToPoint();

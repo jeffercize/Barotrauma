@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -205,11 +206,21 @@ namespace Barotrauma.Items.Components
                         Channel = newChannel;
                     }
                     break;
+<<<<<<< HEAD
+=======
+                case "set_range":
+                    if (float.TryParse(signal, NumberStyles.Float, CultureInfo.InvariantCulture, out float newRange))
+                    {
+                        Range = newRange;
+                    }
+                    break;
+>>>>>>> upstream/master
             }
         }
 
         protected override void RemoveComponentSpecific()
         {
+            base.RemoveComponentSpecific();
             list.Remove(this);
         }
     }

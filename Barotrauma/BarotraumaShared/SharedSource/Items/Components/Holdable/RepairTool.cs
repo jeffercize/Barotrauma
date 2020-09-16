@@ -480,6 +480,7 @@ namespace Barotrauma.Items.Components
                         GUI.Style.Red, GUI.Style.Green);
 #endif
                     return true;
+<<<<<<< HEAD
                 }
                 
                 if (!targetItem.Prefab.DamagedByRepairTools) { return false; }
@@ -503,6 +504,31 @@ namespace Barotrauma.Items.Components
                     dir = dir.LengthSquared() < 0.0001f ? Vector2.UnitY : Vector2.Normalize(dir);
                     targetItem.body.ApplyForce(dir * TargetForce, maxVelocity: 10.0f);
                 }
+=======
+                }
+                
+                if (!targetItem.Prefab.DamagedByRepairTools) { return false; }
+
+                if (HitBrokenDoors)
+                {
+                    if (targetItem.GetComponent<Door>() == null && targetItem.Condition <= 0) { return false; }
+                }
+                else
+                {
+                    if (targetItem.Condition <= 0) { return false; }
+                }
+
+                targetItem.IsHighlighted = true;
+                
+                ApplyStatusEffectsOnTarget(user, deltaTime, ActionType.OnUse, targetItem.AllPropertyObjects);
+
+                if (targetItem.body != null && !MathUtils.NearlyEqual(TargetForce, 0.0f))
+                {
+                    Vector2 dir = targetItem.WorldPosition - item.WorldPosition;
+                    dir = dir.LengthSquared() < 0.0001f ? Vector2.UnitY : Vector2.Normalize(dir);
+                    targetItem.body.ApplyForce(dir * TargetForce, maxVelocity: 10.0f);
+                }
+>>>>>>> upstream/master
 
                 FixItemProjSpecific(user, deltaTime, targetItem);
                 return true;
@@ -604,19 +630,7 @@ namespace Barotrauma.Items.Components
             }
             if (item.RequireAimToUse)
             {
-                bool isOperatingButtons = false;
-                if (character.AIController.SteeringManager is IndoorsSteeringManager indoorSteering)
-                {
-                    var door = indoorSteering.CurrentPath?.CurrentNode?.ConnectedDoor;
-                    if (door != null && !door.IsOpen)
-                    {
-                        isOperatingButtons = door.HasIntegratedButtons || door.Item.GetConnectedComponents<Controller>(true).Any();
-                    }
-                }
-                if (!isOperatingButtons)
-                {
-                    character.SetInput(InputType.Aim, false, true);
-                }
+                character.SetInput(InputType.Aim, false, true);
                 sinTime += deltaTime * 5;
             }
             // Press the trigger only when the tool is approximately facing the target.

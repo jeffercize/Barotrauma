@@ -1,4 +1,5 @@
-﻿using Barotrauma.Networking;
+﻿using System;
+using Barotrauma.Networking;
 using Barotrauma.Particles;
 using Barotrauma.Sounds;
 using Microsoft.Xna.Framework;
@@ -50,13 +51,49 @@ namespace Barotrauma.Items.Components
 
         partial void InitProjSpecific(XElement element)
         {
+            CreateGUI();
+            foreach (XElement subElement in element.Elements())
+            {
+                switch (subElement.Name.ToString().ToLowerInvariant())
+                {
+                    case "emitter":
+                    case "particleemitter":
+                        particleEmitters.Add(new ParticleEmitter(subElement));
+                        float minCondition = subElement.GetAttributeFloat("mincondition", 0.0f);
+                        float maxCondition = subElement.GetAttributeFloat("maxcondition", 100.0f);
+
+                        if (maxCondition < minCondition)
+                        {
+                            DebugConsole.ThrowError("Invalid damage particle configuration in the Repairable component of " + item.Name + ". MaxCondition needs to be larger than MinCondition.");
+                            float temp = maxCondition;
+                            maxCondition = minCondition;
+                            minCondition = temp;
+                        }
+                        particleEmitterConditionRanges.Add(new Vector2(minCondition, maxCondition));
+
+                        break;
+                }
+            }
+        }
+        
+        private void RecreateGUI()
+        {
+            if (GuiFrame != null)
+            {
+                GuiFrame.ClearChildren();
+                CreateGUI();
+            }
+        }
+
+        private void CreateGUI()
+        {
             var paddedFrame = new GUILayoutGroup(new RectTransform(new Vector2(0.8f, 0.75f), GuiFrame.RectTransform, Anchor.Center), childAnchor: Anchor.TopCenter)
             {
                 Stretch = true,
                 RelativeSpacing = 0.05f,
                 CanBeFocused = true
             };
-
+            
             new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.15f), paddedFrame.RectTransform),
                 header, textAlignment: Alignment.TopCenter, font: GUI.LargeFont);
 
@@ -68,7 +105,7 @@ namespace Barotrauma.Items.Components
             for (int i = 0; i < requiredSkills.Count; i++)
             {
                 var skillText = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.0f), paddedFrame.RectTransform),
-                    "   - " + TextManager.AddPunctuation(':', TextManager.Get("SkillName." + requiredSkills[i].Identifier), ((int) requiredSkills[i].Level).ToString()),
+                    "   - " + TextManager.AddPunctuation(':', TextManager.Get("SkillName." + requiredSkills[i].Identifier), ((int) Math.Round(requiredSkills[i].Level * SkillRequirementMultiplier)).ToString()),
                     font: GUI.SmallFont)
                 {
                     UserData = requiredSkills[i]
@@ -111,11 +148,16 @@ namespace Barotrauma.Items.Components
                     return true;
                 }
             };
+        }
 
-            foreach (XElement subElement in element.Elements())
+        partial void UpdateProjSpecific(float deltaTime)
+        {
+            if (FakeBrokenTimer > 0.0f)
             {
-                switch (subElement.Name.ToString().ToLowerInvariant())
+                item.FakeBroken = true;
+                if (Character.Controlled == null || (Character.Controlled.CharacterHealth.GetAffliction("psychosis")?.Strength ?? 0.0f) <= 0.0f)
                 {
+<<<<<<< HEAD
                     case "emitter":
                     case "particleemitter":
                         particleEmitters.Add(new ParticleEmitter(subElement));
@@ -132,10 +174,22 @@ namespace Barotrauma.Items.Components
                         particleEmitterConditionRanges.Add(new Vector2(minCondition, maxCondition));
 
                         break;
+=======
+                    FakeBrokenTimer = 0.0f;
+                }
+                else
+                {
+                    FakeBrokenTimer -= deltaTime;
+>>>>>>> upstream/master
                 }
             }
-        }
+            else
+            {
+                item.FakeBroken = false;
+            }
 
+
+<<<<<<< HEAD
         partial void UpdateProjSpecific(float deltaTime)
         {
             if (Character.Controlled == null || (Character.Controlled.CharacterHealth.GetAffliction("psychosis")?.Strength ?? 0.0f) <= 0.0f)
@@ -149,6 +203,8 @@ namespace Barotrauma.Items.Components
 
             item.FakeBroken = FakeBrokenTimer > 0.0f;
 
+=======
+>>>>>>> upstream/master
             if (!GameMain.IsMultiplayer)
             {
                 switch (requestStartFixAction)
@@ -211,7 +267,7 @@ namespace Barotrauma.Items.Components
                 if (!(c.UserData is Skill skill)) continue;
 
                 GUITextBlock textBlock = (GUITextBlock)c;
-                if (character.GetSkillLevel(skill.Identifier) < skill.Level)
+                if (character.GetSkillLevel(skill.Identifier) < (skill.Level * SkillRequirementMultiplier))
                 {
                     textBlock.TextColor = GUI.Style.Red;
                 }
@@ -247,6 +303,7 @@ namespace Barotrauma.Items.Components
 
         protected override void RemoveComponentSpecific()
         {
+            base.RemoveComponentSpecific();
             repairSoundChannel?.FadeOutAndDispose();
             repairSoundChannel = null;
         }

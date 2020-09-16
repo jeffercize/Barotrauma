@@ -194,7 +194,11 @@ namespace Barotrauma
             float minDist = Sonar.DefaultSonarRange * 2.0f;
             foreach (Submarine submarine in Submarine.Loaded)
             {
+<<<<<<< HEAD
                 if (submarine.Info.Type != SubmarineInfo.SubmarineType.Player) { continue; }
+=======
+                if (submarine.Info.Type != SubmarineType.Player) { continue; }
+>>>>>>> upstream/master
                 if (Vector2.DistanceSquared(submarine.WorldPosition, Wreck.WorldPosition) < minDist * minDist)
                 {
                     someoneNearby = true;

@@ -110,7 +110,11 @@ namespace Barotrauma.Items.Components
             }
         }
 
+<<<<<<< HEAD
         [InGameEditable, Serialize("255,255,255,255", true, description: "The color of the emitted light (R,G,B,A).", alwaysUseInstanceValues: true)]
+=======
+        [InGameEditable(FallBackTextTag = "connection.setcolor"), Serialize("255,255,255,255", true, description: "The color of the emitted light (R,G,B,A).", alwaysUseInstanceValues: true)]
+>>>>>>> upstream/master
         public Color LightColor
         {
             get { return lightColor; }

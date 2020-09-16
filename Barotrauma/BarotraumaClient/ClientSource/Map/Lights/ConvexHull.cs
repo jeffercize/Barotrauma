@@ -96,7 +96,11 @@ namespace Barotrauma.Lights
         private readonly Segment[] segments = new Segment[4];
         private readonly SegmentPoint[] vertices = new SegmentPoint[4];
         private readonly SegmentPoint[] losVertices = new SegmentPoint[4];
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> upstream/master
         private readonly bool[] backFacing;
         private readonly bool[] ignoreEdge;
 
@@ -170,10 +174,12 @@ namespace Barotrauma.Lights
             isHorizontal = BoundingBox.Width > BoundingBox.Height;
             if (ParentEntity is Structure structure)
             {
+                System.Diagnostics.Debug.Assert(!structure.Removed);
                 isHorizontal = structure.IsHorizontal;
             }
             else if (ParentEntity is Item item)
             {
+                System.Diagnostics.Debug.Assert(!item.Removed);
                 var door = item.GetComponent<Door>();
                 if (door != null) { isHorizontal = door.IsHorizontal; }
             }
@@ -289,7 +295,11 @@ namespace Barotrauma.Lights
             }
             else
             {
+<<<<<<< HEAD
                 if (Vector2.DistanceSquared(losVertices[startPointIndex].Pos, segment1.Start.Pos) <
+=======
+                if (Vector2.DistanceSquared(losVertices[startPointIndex].Pos, segment1.Start.Pos) < 
+>>>>>>> upstream/master
                     Vector2.DistanceSquared(losVertices[startPointIndex].Pos, segment1.End.Pos))
                 {
                     losVertices[startPointIndex].Pos = segment2.ConvexHull.losVertices[startPoint2Index].Pos =
@@ -444,7 +454,7 @@ namespace Barotrauma.Lights
 
             CalculateDimensions();
 
-            if (ParentEntity == null) return;
+            if (ParentEntity == null) { return; }
 
             var chList = HullLists.Find(h => h.Submarine == ParentEntity.Submarine);
             if (chList != null)
@@ -755,4 +765,8 @@ namespace Barotrauma.Lights
             }
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> upstream/master

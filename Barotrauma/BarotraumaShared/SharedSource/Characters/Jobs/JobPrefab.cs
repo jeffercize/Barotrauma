@@ -146,6 +146,16 @@ namespace Barotrauma
             private set;
         }
 
+<<<<<<< HEAD
+=======
+        [Serialize(1.0f, false)]
+        public float PriceMultiplier
+        {
+            get;
+            private set;
+        }
+
+>>>>>>> upstream/master
         // TODO: not used
         [Serialize(10.0f, false)]
         public float Commonness
@@ -164,6 +174,12 @@ namespace Barotrauma
 
         public Sprite Icon;
         public Sprite IconSmall;
+<<<<<<< HEAD
+=======
+
+        public SkillPrefab PrimarySkill => Skills?.FirstOrDefault(s => s.IsPrimarySkill);
+
+>>>>>>> upstream/master
         public string FilePath { get; private set; }
 
         public XElement Element { get; private set; }

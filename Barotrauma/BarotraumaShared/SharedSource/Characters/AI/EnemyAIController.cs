@@ -15,7 +15,7 @@ namespace Barotrauma
         public static bool DisableEnemyAI;
 
         /// <summary>
-        /// Enable the character to attack the outposts and the characters inside them. Disabled by default.
+        /// Enable the character to attack the outposts and the characters inside them. Disabled by default in normal levels, enabled in outpost levels.
         /// </summary>
         public bool TargetOutposts;
 
@@ -96,8 +96,12 @@ namespace Barotrauma
 
         private float avoidTimer;
 
+        public bool StayInsideLevel = true;
+
         public LatchOntoAI LatchOntoAI { get; private set; }
         public SwarmBehavior SwarmBehavior { get; private set; }
+
+        public CharacterParams.TargetParams SelectedTargetingParams { get { return selectedTargetingParams; } }
 
         public bool AttackHumans
         {
@@ -153,6 +157,8 @@ namespace Barotrauma
             var mainElement = prefab.XDocument.Root.IsOverride() ? prefab.XDocument.Root.FirstElement() : prefab.XDocument.Root;
             targetMemories = new Dictionary<AITarget, AITargetMemory>();
             steeringManager = outsideSteering;
+            //allow targeting outposts and outpost NPCs in outpost levels
+            TargetOutposts = Level.Loaded != null && Level.Loaded.Type == LevelData.LevelType.Outpost;
 
             List<XElement> aiElements = new List<XElement>();
             List<float> aiCommonness = new List<float>();
@@ -298,9 +304,9 @@ namespace Barotrauma
                 else
                 {
                     CharacterParams.TargetParams targetingParams = null;
+                    UpdateTargets(Character, out targetingParams);
                     if (!IsLatchedOnSub)
                     {
-                        UpdateTargets(Character, out targetingParams);
                         UpdateWallTarget();
                     }
                     updateTargetsTimer = updateTargetsInterval * Rand.Range(0.75f, 1.25f);
@@ -1186,6 +1192,12 @@ namespace Barotrauma
                 attackLimbs.Clear();
                 weights.Clear();
             }
+            if (AIParams.RandomAttack)
+            {
+                selectedLimb = ToolBox.SelectWeightedRandom(attackLimbs, weights, Rand.RandSync.Server);
+                attackLimbs.Clear();
+                weights.Clear();
+            }
             return selectedLimb;
 
             float CalculatePriority(Limb limb, Vector2 attackPos)
@@ -1289,6 +1301,10 @@ namespace Barotrauma
             }
             return isDisabled;
         }
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
         public override void OnAttacked(Character attacker, AttackResult attackResult)
         {
             float reactionTime = Rand.Range(0.1f, 0.3f);
@@ -1366,7 +1382,7 @@ namespace Barotrauma
                 }
                 else if (canAttack && attacker.IsHuman && AIParams.TryGetTarget(attacker.SpeciesName, out CharacterParams.TargetParams targetingParams))
                 {
-                    if (targetingParams.State == AIState.Aggressive)
+                    if (targetingParams.State == AIState.Aggressive || targetingParams.State == AIState.PassiveAggressive)
                     {
                         ChangeTargetState(attacker, AIState.Attack, 100);
                     }
@@ -1560,7 +1576,7 @@ namespace Barotrauma
                 {
                     SelectedAiTarget = null;
                     wallTarget = null;
-                    LatchOntoAI.DeattachFromBody();
+                    LatchOntoAI.DeattachFromBody(cooldown: 1);
                 }
                 else if (SelectedAiTarget?.Entity == wallTarget?.Structure)
                 {
@@ -1847,6 +1863,28 @@ namespace Barotrauma
                 valueModifier *= targetParams.Priority;
 
                 if (valueModifier == 0.0f) { continue; }
+
+                if (SwarmBehavior != null && SwarmBehavior.Members.Any())
+                {
+                    // Halve the priority for each swarm mate targeting the same target -> reduces stacking
+                    foreach (Character otherCharacter in SwarmBehavior.Members)
+                    {
+                        if (otherCharacter == character) { continue; }
+                        if (otherCharacter.AIController?.SelectedAiTarget != aiTarget) { continue; }
+                        valueModifier /= 2;
+                    }
+                }
+                else
+                {
+                    // The same as above, but using all the friendly characters in the level.
+                    foreach (Character otherCharacter in Character.CharacterList)
+                    {
+                        if (otherCharacter == character) { continue; }
+                        if (otherCharacter.AIController?.SelectedAiTarget != aiTarget) { continue; }
+                        if (!IsFriendly(character, otherCharacter)) { continue; }
+                        valueModifier /= 2;
+                    }
+                }
 
                 Vector2 toTarget = aiTarget.WorldPosition - character.WorldPosition;
                 float dist = toTarget.Length();
@@ -2198,23 +2236,23 @@ namespace Barotrauma
         private float returnTimer;
         private void SteerInsideLevel(float deltaTime)
         {
-            if (SteeringManager is IndoorsSteeringManager) { return; }
+            if (SteeringManager is IndoorsSteeringManager || !StayInsideLevel) { return; }
             if (Level.Loaded == null) { return; }
-            Vector2 levelSimSize = ConvertUnits.ToSimUnits(Level.Loaded.Size.X, Level.Loaded.Size.Y);
-            float returnTime = 3;
-            if (SimPosition.Y < 0)
+            Point levelSize = Level.Loaded.Size;
+            float returnTime = 10;
+            if (WorldPosition.Y < 0)
             {
                 // Too far down
                 returnTimer = returnTime * Rand.Range(0.75f, 1.25f);
                 returnDir = Vector2.UnitY;
             }
-            if (SimPosition.X < 0)
+            if (WorldPosition.X < 0)
             {
                 // Too far left
                 returnTimer = returnTime * Rand.Range(0.75f, 1.25f);
                 returnDir = Vector2.UnitX;
             }
-            if (SimPosition.X > levelSimSize.X)
+            if (WorldPosition.X > levelSize.X)
             {
                 // Too far right
                 returnTimer = returnTime * Rand.Range(0.75f, 1.25f);
@@ -2224,7 +2262,7 @@ namespace Barotrauma
             {
                 returnTimer -= deltaTime;
                 SteeringManager.Reset();
-                SteeringManager.SteeringManual(deltaTime, returnDir);
+                SteeringManager.SteeringManual(deltaTime, returnDir * 2);
             }
         }
 

@@ -41,6 +41,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// Index pointer to the next available SpriteBatchItem in _batchItemList.
         /// </summary>
         private int _batchItemCount;
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
         /// <summary>
         /// The target graphics device.
         /// </summary>
@@ -166,6 +170,10 @@ namespace Microsoft.Xna.Framework.Graphics
             int batchIndex = 0;
             int batchCount = _batchItemCount;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
             unchecked
             {
                 _device._graphicsMetrics._spriteCount += batchCount;

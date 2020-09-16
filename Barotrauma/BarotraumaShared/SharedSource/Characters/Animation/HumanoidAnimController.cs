@@ -323,6 +323,10 @@ namespace Barotrauma
 
             levitatingCollider = true;
             ColliderIndex = Crouching ? 1 : 0;
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
             if (character.SelectedConstruction?.GetComponent<Controller>()?.ControlCharacterPose ?? false)
             {
                 Crouching = false;
@@ -567,7 +571,7 @@ namespace Barotrauma
                     //TODO: take into account that the feet aren't necessarily in CurrentHull
                     //full slowdown (1.5f) when water is up to the torso
                     surfaceY = ConvertUnits.ToSimUnits(currentHull.Surface);
-                    float bottomPos = Math.Max(colliderPos.Y, currentHull.Rect.Y - currentHull.Rect.Height);
+                    float bottomPos = Math.Max(colliderPos.Y, ConvertUnits.ToSimUnits(currentHull.Rect.Y - currentHull.Rect.Height));
                     slowdownAmount = MathHelper.Clamp((surfaceY - bottomPos) / TorsoPosition.Value, 0.0f, 1.0f) * 1.5f;
                 }
 
@@ -609,7 +613,7 @@ namespace Barotrauma
             if (torso == null) { return; }
 
             bool isNotRemote = true;
-            if (GameMain.NetworkMember != null && GameMain.NetworkMember.IsClient) isNotRemote = !character.IsRemotePlayer;
+            if (GameMain.NetworkMember != null && GameMain.NetworkMember.IsClient) { isNotRemote = !character.IsRemotelyControlled; }
 
             if (onGround && isNotRemote)
             {
@@ -658,30 +662,37 @@ namespace Barotrauma
                     (float)Math.Sin(WalkPos * CurrentGroundedParams.StepLiftFrequency + MathHelper.Pi * CurrentGroundedParams.StepLiftOffset) * (CurrentGroundedParams.StepLiftAmount / 100);
 
                 float y = colliderPos.Y + stepLift;
-                if (TorsoPosition.HasValue)
-                {
-                    y += TorsoPosition.Value;
-                }
-                torso.PullJointWorldAnchorB =
-                    MathUtils.SmoothStep(torso.SimPosition,
-                    new Vector2(footMid + movement.X * TorsoLeanAmount, y), getUpForce);
 
-                y = colliderPos.Y + stepLift * CurrentGroundedParams.StepLiftHeadMultiplier;
-                if (HeadPosition.HasValue)
+                if (!torso.Disabled)
                 {
-                    y += HeadPosition.Value;
+                    if (TorsoPosition.HasValue)
+                    {
+                        y += TorsoPosition.Value;
+                    }
+                    torso.PullJointWorldAnchorB =
+                        MathUtils.SmoothStep(torso.SimPosition,
+                        new Vector2(footMid + movement.X * TorsoLeanAmount, y), getUpForce);
                 }
-                head.PullJointWorldAnchorB =
-                    MathUtils.SmoothStep(head.SimPosition,
-                    new Vector2(footMid + movement.X * HeadLeanAmount, y), getUpForce * 1.2f);
 
-                if (waist != null)
+                if (!head.Disabled)
+                {
+                    y = colliderPos.Y + stepLift * CurrentGroundedParams.StepLiftHeadMultiplier;
+                    if (HeadPosition.HasValue)
+                    {
+                        y += HeadPosition.Value;
+                    }
+                    head.PullJointWorldAnchorB =
+                        MathUtils.SmoothStep(head.SimPosition,
+                        new Vector2(footMid + movement.X * HeadLeanAmount, y), getUpForce * 1.2f);
+                }
+
+                if (waist != null && !waist.Disabled)
                 {
                     waist.PullJointWorldAnchorB = waist.SimPosition + movement * 0.06f;
                 }
             }
 
-            if (TorsoAngle.HasValue)
+            if (TorsoAngle.HasValue && !torso.Disabled)
             {
                 float torsoAngle = TorsoAngle.Value;
                 float herpesStrength = character.CharacterHealth.GetAfflictionStrength("spaceherpes");
@@ -786,8 +797,14 @@ namespace Barotrauma
                     if (Crouching)
                     {
                         footPos = new Vector2(
-                            waistPos.X + Math.Sign(stepSize.X * i) * Dir * 0.1f,
-                            colliderPos.Y - 0.1f);
+                            Math.Sign(stepSize.X * i) * Dir * 0.4f,
+                            colliderPos.Y);
+                        if (Math.Sign(footPos.X) != Math.Sign(Dir))
+                        {
+                            //lift the foot at the back up a bit
+                            footPos.Y += 0.15f;
+                        }
+                        footPos.X += torso.SimPosition.X;
                     }
                     else
                     {
@@ -851,7 +868,7 @@ namespace Barotrauma
             {
                 Collider.LinearVelocity = movement;
             }
-            else if (onGround && (!character.IsRemotePlayer || (GameMain.NetworkMember != null && GameMain.NetworkMember.IsServer)))
+            else if (onGround && (!character.IsRemotelyControlled || (GameMain.NetworkMember != null && GameMain.NetworkMember.IsServer)))
             {
                 Collider.LinearVelocity = new Vector2(
                         movement.X,
@@ -920,7 +937,8 @@ namespace Barotrauma
             rotation = MathHelper.ToDegrees(rotation);
             if (rotation < 0.0f) rotation += 360;
 
-            if (!character.IsRemotePlayer && !aiming && Anim != Animation.UsingConstruction)
+            if (!character.IsRemotelyControlled && !aiming && Anim != Animation.UsingConstruction &&
+                !(character.SelectedConstruction?.GetComponent<Controller>()?.ControlCharacterPose ?? false))
             {
                 if (rotation > 20 && rotation < 170)
                     TargetDir = Direction.Left;
@@ -980,7 +998,6 @@ namespace Barotrauma
                 {
                     //pull head above water
                     head.body.SmoothRotate(0.0f, 5.0f);
-
                     WalkPos += 0.05f;
                 }
                 else
@@ -998,7 +1015,7 @@ namespace Barotrauma
             }
 
             bool isNotRemote = true;
-            if (GameMain.NetworkMember != null && GameMain.NetworkMember.IsClient) isNotRemote = !character.IsRemotePlayer;
+            if (GameMain.NetworkMember != null && GameMain.NetworkMember.IsClient) { isNotRemote = !character.IsRemotelyControlled; }
 
             if (isNotRemote)
             {
@@ -1009,9 +1026,22 @@ namespace Barotrauma
             legCyclePos += Math.Min(movement.LengthSquared() + Collider.AngularVelocity, 1.0f);
             handCyclePos += MathHelper.ToRadians(CurrentSwimParams.HandCycleSpeed) * Math.Sign(movement.X);
 
+            float legMoveMultiplier = 1.0f;
+            if (movement.LengthSquared() < 0.001f)
+            {
+                //TODO: expose these?
+                legMoveMultiplier = 0.3f;
+                legCyclePos += 0.4f;
+                handCyclePos += 0.1f;
+            }
+
             var waist = GetLimb(LimbType.Waist);
             footPos = waist == null ? Vector2.Zero : waist.SimPosition - new Vector2((float)Math.Sin(-Collider.Rotation), (float)Math.Cos(-Collider.Rotation)) * (upperLegLength + lowerLegLength);
+<<<<<<< HEAD
             Vector2 transformedFootPos = new Vector2((float)Math.Sin(legCyclePos / CurrentSwimParams.LegCycleLength) * CurrentSwimParams.LegMoveAmount, 0.0f);
+=======
+            Vector2 transformedFootPos = new Vector2((float)Math.Sin(legCyclePos / CurrentSwimParams.LegCycleLength) * CurrentSwimParams.LegMoveAmount * legMoveMultiplier, 0.0f);
+>>>>>>> upstream/master
             transformedFootPos = Vector2.Transform(transformedFootPos, Matrix.CreateRotationZ(Collider.Rotation));
 
             float torque = CurrentSwimParams.FootRotateStrength * character.SpeedMultiplier * (1.2f - character.GetLegPenalty());
@@ -1084,7 +1114,7 @@ namespace Barotrauma
 
         void UpdateClimbing()
         {
-            if (character.SelectedConstruction == null || character.SelectedConstruction.GetComponent<Ladder>() == null)
+            if (character.SelectedConstruction == null || character.SelectedConstruction.GetComponent<Ladder>() == null || character.IsIncapacitated)
             {
                 Anim = Animation.None;
                 return;
@@ -1108,6 +1138,8 @@ namespace Barotrauma
             Limb leftHand   = GetLimb(LimbType.LeftHand);
             Limb rightHand  = GetLimb(LimbType.RightHand);
 
+            if (leftHand == null || rightHand == null || head == null || torso == null) { return; }
+
             Vector2 ladderSimPos = ConvertUnits.ToSimUnits(
                 character.SelectedConstruction.Rect.X + character.SelectedConstruction.Rect.Width / 2.0f,
                 character.SelectedConstruction.Rect.Y);
@@ -1120,9 +1152,13 @@ namespace Barotrauma
             {
                 ladderSimPos += character.SelectedConstruction.Submarine.SimPosition;
             }
-            else if (currentHull.Submarine != null && currentHull.Submarine != character.SelectedConstruction.Submarine)
+            else if (currentHull?.Submarine != null && currentHull.Submarine != character.SelectedConstruction.Submarine && character.SelectedConstruction.Submarine != null)
             {
                 ladderSimPos += character.SelectedConstruction.Submarine.SimPosition - currentHull.Submarine.SimPosition;
+            }
+            else if (currentHull?.Submarine != null && character.SelectedConstruction.Submarine == null)
+            {
+                ladderSimPos -= currentHull.Submarine.SimPosition;
             }
 
             float bottomPos = Collider.SimPosition.Y - ColliderHeightFromFloor - Collider.radius - Collider.height / 2.0f;
@@ -1161,7 +1197,7 @@ namespace Barotrauma
 
             //only move the feet if they're above the bottom of the ladders
             //(if not, they'll just dangle in air, and the character holds itself up with it's arms)
-            if (footPos.Y > -ladderSimSize.Y)
+            if (footPos.Y > -ladderSimSize.Y && leftFoot != null && rightFoot != null)
             {
                 if (slide)
                 {
@@ -1226,7 +1262,7 @@ namespace Barotrauma
             bool isClimbing = true;
             if (GameMain.NetworkMember != null && GameMain.NetworkMember.IsClient)
             {
-                isRemote = character.IsRemotePlayer;
+                isRemote = character.IsRemotelyControlled;
             }
             if (isRemote)
             {
@@ -1693,7 +1729,8 @@ namespace Barotrauma
             // TODO: Remove this. Provide the position in params.
             Vector2 itemPos = aim ? aimPos : holdPos;
 
-            bool usingController = character.SelectedConstruction != null && character.SelectedConstruction.GetComponent<Controller>() != null;
+            var controller = character.SelectedConstruction?.GetComponent<Controller>();
+            bool usingController = controller != null && !controller.AllowAiming;
             bool isClimbing = character.IsClimbing && Math.Abs(character.AnimController.TargetMovement.Y) > 0.01f;
 
             float itemAngle;
@@ -1812,17 +1849,14 @@ namespace Barotrauma
                 }
             }
 
-            item.SetTransform(currItemPos, itemAngle + itemAngleRelativeToHoldAngle * Dir, setPrevTransform: false);
+            item.SetTransform(currItemPos, itemAngle + itemAngleRelativeToHoldAngle * Dir, setPrevTransform: false);            
 
-            if (!isClimbing)
+            if (!isClimbing && !character.IsIncapacitated)
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    if (character.SelectedItems[i] != item) continue;
-                    if (itemPos == Vector2.Zero) continue;
-
+                    if (character.SelectedItems[i] != item || itemPos == Vector2.Zero) { continue; }
                     Limb hand = (i == 0) ? rightHand : leftHand;
-
                     HandIK(hand, transformedHoldPos + transformedHandlePos[i]);
                 }
             }

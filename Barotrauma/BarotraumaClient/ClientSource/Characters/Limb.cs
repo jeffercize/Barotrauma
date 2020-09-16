@@ -468,6 +468,7 @@ namespace Barotrauma
                         if (afflictionPrefab.Effects.Any(e => e.MaxVitalityDecrease > 0))
                         {
                             damageMultiplier *= damageModifier.DamageMultiplier;
+                            break;
                         }
                     }
                 }

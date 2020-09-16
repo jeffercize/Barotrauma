@@ -168,6 +168,8 @@ namespace Barotrauma
                     paletteIndex = 1;
                 }
                 newData[12 + (i / 4)] |= (byte)(paletteIndex << (2 * (i % 4)));
+<<<<<<< HEAD
+=======
             }
 
             newData[0] = (byte)a2;
@@ -186,9 +188,31 @@ namespace Barotrauma
             using (FileStream fileStream = File.OpenRead(path))
             {
                 return FromStream(fileStream, path, compress, mipmap);
+>>>>>>> upstream/master
+            }
+
+            newData[0] = (byte)a2;
+            newData[1] = (byte)a1;
+
+            newData[9] = (byte)((r1_565 << 3) | (g1_565 >> 3));
+            newData[8] = (byte)((g1_565 << 5) | b1_565);
+            newData[11] = (byte)((r2_565 << 3) | (g2_565 >> 3));
+            newData[10] = (byte)((g2_565 << 5) | b2_565);
+
+            output.Write(newData, 0, 16);
+        }
+
+<<<<<<< HEAD
+        public static Texture2D FromFile(string path, bool compress = true, bool mipmap = false)
+        {
+            using (FileStream fileStream = File.OpenRead(path))
+            {
+                return FromStream(fileStream, path, compress, mipmap);
             }
         }
 
+=======
+>>>>>>> upstream/master
         public static Texture2D FromStream(System.IO.Stream stream, string path = null, bool compress = true, bool mipmap = false)
         {
             try
@@ -211,6 +235,14 @@ namespace Barotrauma
                         DebugConsole.NewMessage($"Could not compress a texture because the dimensions aren't a multiple of 4 (path: {path ?? "null"}, size: {width}x{height})", Color.Orange);
                     }
                 }
+<<<<<<< HEAD
+=======
+
+                if (((width & 0x03) != 0) || ((height & 0x03) != 0))
+                {
+                    DebugConsole.AddWarning($"Cannot compress a texture because the dimensions are not a multiple of 4 (path: {path ?? "null"}, size: {width}x{height})");
+                }
+>>>>>>> upstream/master
 
                 Texture2D tex = null;
                 CrossThread.RequestExecutionOnMainThread(() =>

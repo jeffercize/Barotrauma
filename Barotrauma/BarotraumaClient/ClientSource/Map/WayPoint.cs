@@ -4,6 +4,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+<<<<<<< HEAD
+=======
+using System.Linq;
+>>>>>>> upstream/master
 
 namespace Barotrauma
 {
@@ -37,7 +41,11 @@ namespace Barotrauma
 
         public void Draw(SpriteBatch spriteBatch, Vector2 drawPos)
         {
+<<<<<<< HEAD
             Color clr = currentHull == null ? Color.CadetBlue : GUI.Style.Green;
+=======
+            Color clr = CurrentHull == null ? Color.DodgerBlue : GUI.Style.Green;
+>>>>>>> upstream/master
             if (spawnType != SpawnType.Path) { clr = Color.Gray; }
             if (isObstructed)
             {
@@ -46,7 +54,11 @@ namespace Barotrauma
             if (IsHighlighted || IsHighlighted) { clr = Color.Lerp(clr, Color.White, 0.8f); }
 
             int iconSize = spawnType == SpawnType.Path ? WaypointSize : SpawnPointSize;
+<<<<<<< HEAD
             if (ConnectedGap != null || Ladders != null || Stairs != null || SpawnType != SpawnType.Path) { iconSize = (int)(iconSize * 1.5f); }
+=======
+            if (ConnectedDoor != null || Ladders != null || Stairs != null || SpawnType != SpawnType.Path) { iconSize = (int)(iconSize * 1.5f); }
+>>>>>>> upstream/master
 
             if (IsSelected || IsHighlighted)
             {
@@ -82,6 +94,23 @@ namespace Barotrauma
                     drawPos,
                     new Vector2(e.DrawPosition.X, -e.DrawPosition.Y),
                     (isObstructed ? Color.Gray : GUI.Style.Green) * 0.7f, width: 5, depth: 0.002f);
+<<<<<<< HEAD
+=======
+            }
+            if (ConnectedGap != null)
+            {
+                GUI.DrawLine(spriteBatch,
+                    drawPos,
+                    new Vector2(ConnectedGap.WorldPosition.X, -ConnectedGap.WorldPosition.Y),
+                    GUI.Style.Green * 0.5f, width: 1);
+            }
+            if (Ladders != null)
+            {
+                GUI.DrawLine(spriteBatch,
+                    drawPos,
+                    new Vector2(Ladders.Item.WorldPosition.X, -Ladders.Item.WorldPosition.Y),
+                    GUI.Style.Green * 0.5f, width: 1);
+>>>>>>> upstream/master
             }
 
             GUI.SmallFont.DrawString(spriteBatch,
@@ -117,7 +146,11 @@ namespace Barotrauma
                 editingHUD = CreateEditingHUD();
             }
 
+<<<<<<< HEAD
             if (IsSelected && PlayerInput.PrimaryMouseButtonClicked())
+=======
+            if (IsSelected && PlayerInput.PrimaryMouseButtonClicked() && GUI.MouseOn == null)
+>>>>>>> upstream/master
             {
                 Vector2 position = cam.ScreenToWorld(PlayerInput.MousePosition);
 
@@ -144,6 +177,10 @@ namespace Barotrauma
                 }
                 else
                 {
+<<<<<<< HEAD
+=======
+                    FindHull();
+>>>>>>> upstream/master
                     // Update gaps, ladders, and stairs
                     UpdateLinkedEntity(position, Gap.GapList, gap => ConnectedGap = gap, gap =>
                     {
@@ -170,6 +207,10 @@ namespace Barotrauma
                             }
                         }
                     }, inflate: 5);
+<<<<<<< HEAD
+=======
+                    FindStairs();
+>>>>>>> upstream/master
                     // TODO: Cannot check the rectangle, since the rectangle is not rotated -> Need to use the collider.
                     //var stairList = mapEntityList.Where(me => me is Structure s && s.StairDirection != Direction.None).Select(me => me as Structure);
                     //UpdateLinkedEntity(position, stairList, s =>
@@ -240,7 +281,16 @@ namespace Barotrauma
             textBox.Deselect();
             return true;
         }
-        
+
+        private bool EnterTags(GUITextBox textBox, string text)
+        {
+            tags = text.Split(',').ToList();
+            textBox.Text = string.Join(",", Tags);
+            textBox.Flash(GUI.Style.Green);
+            textBox.Deselect();
+            return true;
+        }
+
         private bool TextBoxChanged(GUITextBox textBox, string text)
         {
             textBox.Color = GUI.Style.Red;
@@ -298,7 +348,7 @@ namespace Barotrauma
 
                 var descText = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.2f), paddedFrame.RectTransform), 
                     TextManager.Get("IDCardDescription"), font: GUI.SmallFont);
-                GUITextBox propertyBox = new GUITextBox(new RectTransform(new Vector2(0.5f, 1.0f), descText.RectTransform, Anchor.CenterRight), idCardDesc)
+                GUITextBox propertyBox = new GUITextBox(new RectTransform(new Vector2(0.5f, 1.0f), descText.RectTransform, Anchor.CenterRight), IdCardDesc)
                 {
                     MaxTextLength = 150,
                     OnEnterPressed = EnterIDCardDesc,
@@ -306,9 +356,9 @@ namespace Barotrauma
                 };
                 propertyBox.OnTextChanged += TextBoxChanged;
 
-                var tagsText = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.2f), paddedFrame.RectTransform),
+                var idCardTagsText = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.2f), paddedFrame.RectTransform),
                     TextManager.Get("IDCardTags"), font: GUI.SmallFont);
-                propertyBox = new GUITextBox(new RectTransform(new Vector2(0.5f, 1.0f), tagsText.RectTransform, Anchor.CenterRight), string.Join(", ", idCardTags))
+                propertyBox = new GUITextBox(new RectTransform(new Vector2(0.5f, 1.0f), idCardTagsText.RectTransform, Anchor.CenterRight), string.Join(", ", idCardTags))
                 {
                     MaxTextLength = 60,
                     OnEnterPressed = EnterIDCardTags,
@@ -327,7 +377,7 @@ namespace Barotrauma
                     ToolTip = TextManager.Get("SpawnpointJobsTooltip"),
                     OnSelected = (selected, userdata) =>
                     {
-                        assignedJob = userdata as JobPrefab;
+                        AssignedJob = userdata as JobPrefab;
                         return true;
                     }
                 };
@@ -336,7 +386,17 @@ namespace Barotrauma
                 {
                     jobDropDown.AddItem(jobPrefab.Name, jobPrefab);
                 }
-                jobDropDown.SelectItem(assignedJob);
+                jobDropDown.SelectItem(AssignedJob);
+
+                var tagsText = new GUITextBlock(new RectTransform(new Vector2(1.0f, 0.2f), paddedFrame.RectTransform),
+                    TextManager.Get("spawnpointtags"), font: GUI.SmallFont);
+                propertyBox = new GUITextBox(new RectTransform(new Vector2(0.5f, 1.0f), tagsText.RectTransform, Anchor.CenterRight), string.Join(", ", tags))
+                {
+                    MaxTextLength = 60,
+                    OnEnterPressed = EnterTags,
+                    ToolTip = TextManager.Get("spawnpointtagstooltip")
+                };
+                propertyBox.OnTextChanged += TextBoxChanged;
             }
             
             PositionEditingHUD();

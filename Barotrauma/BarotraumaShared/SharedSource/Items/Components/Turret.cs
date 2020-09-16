@@ -315,7 +315,12 @@ namespace Barotrauma.Items.Components
             float springDamping = MathHelper.Lerp(SpringDampingLowSkill, SpringDampingHighSkill, degreeOfSuccess);
             float rotationSpeed = MathHelper.Lerp(RotationSpeedLowSkill, RotationSpeedHighSkill, degreeOfSuccess);
 
+<<<<<<< HEAD
             if (user?.Info != null)
+=======
+            // Do not increase the weapons skill when operating a turret in an outpost level
+            if (user?.Info != null && (GameMain.GameSession?.Campaign == null || !Level.IsLoadedOutpost))
+>>>>>>> upstream/master
             {
                 user.Info.IncreaseSkillLevel("weapons",
                     SkillSettings.Current.SkillIncreasePerSecondWhenOperatingTurret * deltaTime / Math.Max(user.GetSkillLevel("weapons"), 1.0f),
@@ -429,6 +434,20 @@ namespace Barotrauma.Items.Components
                     var batteries = item.GetConnectedComponents<PowerContainer>();
                     float neededPower = powerConsumption;
                     while (neededPower > 0.0001f && batteries.Count > 0)
+<<<<<<< HEAD
+                    {
+                        batteries.RemoveAll(b => b.Charge <= 0.0001f || b.MaxOutPut <= 0.0001f);
+                        float takePower = neededPower / batteries.Count;
+                        takePower = Math.Min(takePower, batteries.Min(b => Math.Min(b.Charge * 3600.0f, b.MaxOutPut)));
+                        foreach (PowerContainer battery in batteries)
+                        {
+                            neededPower -= takePower;
+                            battery.Charge -= takePower / 3600.0f;
+#if SERVER
+                            battery.Item.CreateServerEvent(battery);                        
+#endif
+                        }
+=======
                     {
                         batteries.RemoveAll(b => b.Charge <= 0.0001f || b.MaxOutPut <= 0.0001f);
                         float takePower = neededPower / batteries.Count;
@@ -447,9 +466,23 @@ namespace Barotrauma.Items.Components
                 if (launchedProjectile != null || LaunchWithoutProjectile)
                 {
                     Launch(launchedProjectile?.Item, character);
+                    if (item.AiTarget != null)
+                    {
+                        item.AiTarget.SoundRange = item.AiTarget.MaxSoundRange;
+                        // Turrets also have a light component, which handles the sight range.
+>>>>>>> upstream/master
+                    }
+                }
+
+<<<<<<< HEAD
+                if (launchedProjectile != null || LaunchWithoutProjectile)
+                {
+                    Launch(launchedProjectile?.Item, character);
                 }
             }
 
+=======
+>>>>>>> upstream/master
 #if SERVER
             if (character != null && launchedProjectile != null)
             {
@@ -586,7 +619,11 @@ namespace Barotrauma.Items.Components
                     closestDist = maxDistance * maxDistance;
                     foreach (Submarine sub in Submarine.Loaded)
                     {
+<<<<<<< HEAD
                         if (sub.Info.Type != SubmarineInfo.SubmarineType.Player) { continue; }
+=======
+                        if (sub.Info.Type != SubmarineType.Player) { continue; }
+>>>>>>> upstream/master
                         float dist = Vector2.DistanceSquared(sub.WorldPosition, item.WorldPosition);
                         if (dist > closestDist) { continue; }
                         closestSub = sub;

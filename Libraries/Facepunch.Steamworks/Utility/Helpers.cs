@@ -7,14 +7,26 @@ namespace Steamworks
 {
 	internal static class Helpers
 	{
-		public const int MaxStringSize = 1024 * 32;
+		public const int MemoryBufferSize = 1024 * 32;
 
+		private static IntPtr[] MemoryPool = new IntPtr[]
+		{
+			Marshal.AllocHGlobal( MemoryBufferSize ),
+			Marshal.AllocHGlobal( MemoryBufferSize ),
+			Marshal.AllocHGlobal( MemoryBufferSize ),
+			Marshal.AllocHGlobal( MemoryBufferSize )
+		};
+
+<<<<<<< HEAD
 		private static object mutex = new object();
 		private static IntPtr[] MemoryPool;
+=======
+>>>>>>> upstream/master
 		private static int MemoryPoolIndex;
 
 		public static unsafe IntPtr TakeMemory()
 		{
+<<<<<<< HEAD
 			IntPtr take = IntPtr.Zero;
 			lock (mutex)
 			{
@@ -38,55 +50,58 @@ namespace Steamworks
 
 				((byte*)take)[0] = 0;
 			}
+=======
+			lock ( MemoryPool )
+			{
+				MemoryPoolIndex++;
 
-			return take;
+				if ( MemoryPoolIndex >= MemoryPool.Length )
+					MemoryPoolIndex = 0;
+
+				var take = MemoryPool[MemoryPoolIndex];
+
+				((byte*)take)[0] = 0;
+>>>>>>> upstream/master
+
+				return take;
+			}
 		}
 
 
-		private static byte[][] BufferPool;
+		private static byte[][] BufferPool = new byte[4][];
 		private static int BufferPoolIndex;
 		private static object BufferMutex = new object();
 
 		/// <summary>
 		/// Returns a buffer. This will get returned and reused later on.
+		/// We shouldn't really be using this anymore. 
 		/// </summary>
 		public static byte[] TakeBuffer( int minSize )
 		{
-			int bufferPoolIndex;
-			lock (BufferMutex)
+			lock ( BufferPool )
 			{
-				if (BufferPool == null)
-				{
-					//
-					// The pool has 8 items.
-					//
-					BufferPool = new byte[8][];
-
-					for (int i = 0; i < BufferPool.Length; i++)
-						BufferPool[i] = new byte[1024 * 128];
-				}
-
 				BufferPoolIndex++;
 
-				if (BufferPoolIndex < 0 || BufferPoolIndex >= BufferPool.Length)
+				if ( BufferPoolIndex >= BufferPool.Length )
 					BufferPoolIndex = 0;
 
-				bufferPoolIndex = BufferPoolIndex;
-			}
+				if ( BufferPool[BufferPoolIndex] == null ) 
+					BufferPool[BufferPoolIndex] = new byte[1024 * 256];
 
-			if ( BufferPool[bufferPoolIndex].Length < minSize )
-			{
-				BufferPool[bufferPoolIndex] = new byte[minSize + 1024];
-			}
+				if ( BufferPool[BufferPoolIndex].Length < minSize )
+				{
+					BufferPool[BufferPoolIndex] = new byte[minSize + 1024];
+				}
 
-			return BufferPool[bufferPoolIndex];
+				return BufferPool[BufferPoolIndex];
+			}
 		}
 
 		internal unsafe static string MemoryToString( IntPtr ptr )
 		{
 			var len = 0;
 
-			for( len = 0; len < MaxStringSize; len++ )
+			for( len = 0; len < MemoryBufferSize; len++ )
 			{
 				if ( ((byte*)ptr)[len] == 0 )
 					break;

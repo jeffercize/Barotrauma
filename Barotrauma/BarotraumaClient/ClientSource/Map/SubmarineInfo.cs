@@ -1,17 +1,25 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+<<<<<<< HEAD
 using System.Collections.Generic;
 using Barotrauma.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+=======
+using System.Linq;
+>>>>>>> upstream/master
 
 namespace Barotrauma
 {
     partial class SubmarineInfo : IDisposable
     {
         public Sprite PreviewImage;
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> upstream/master
         partial void InitProjectSpecific()
         {
             string previewImageData = SubmarineElement.GetAttributeString("previewimage", "");
@@ -57,6 +65,7 @@ namespace Barotrauma
                 ScrollBarVisible = true,
                 Spacing = 5
             };
+<<<<<<< HEAD
 
             //space
             new GUIFrame(new RectTransform(new Vector2(1.0f, 0.03f), descriptionBox.Content.RectTransform), style: null);
@@ -67,13 +76,54 @@ namespace Barotrauma
             float rightPanelWidth = 0.4f / leftPanelWidth;
 
             ScalableFont font = descriptionBox.Rect.Width < 350 ? GUI.SmallFont : GUI.Font;
+=======
+            
+            ScalableFont font = parent.Rect.Width < 350 ? GUI.SmallFont : GUI.Font;
+
+            CreateSpecsWindow(descriptionBox, font);
+
+            //space
+            new GUIFrame(new RectTransform(new Vector2(1.0f, 0.05f), descriptionBox.Content.RectTransform), style: null);
+
+            if (!string.IsNullOrEmpty(Description))
+            {
+                new GUITextBlock(new RectTransform(new Vector2(1, 0), descriptionBox.Content.RectTransform),
+                    TextManager.Get("SaveSubDialogDescription", fallBackTag: "WorkshopItemDescription"), font: GUI.Font, wrap: true)
+                { CanBeFocused = false, ForceUpperCase = true };
+            }
+
+            new GUITextBlock(new RectTransform(new Vector2(1, 0), descriptionBox.Content.RectTransform), Description, font: font, wrap: true)
+            {
+                CanBeFocused = false
+            };
+        }
+
+        public void CreateSpecsWindow(GUIListBox parent, ScalableFont font)
+        {
+            float leftPanelWidth = 0.6f;
+            float rightPanelWidth = 0.4f / leftPanelWidth;
+            string className = !HasTag(SubmarineTag.Shuttle) ? TextManager.Get($"submarineclass.{SubmarineClass}") : TextManager.Get("shuttle");
+
+            int nameHeight = (int)GUI.LargeFont.MeasureString(DisplayName, true).Y;
+            int classHeight = (int)GUI.SubHeadingFont.MeasureString(className).Y;
+            int leftPanelWidthInt = (int)(parent.Rect.Width * leftPanelWidth);
+
+            var submarineNameText = new GUITextBlock(new RectTransform(new Point(leftPanelWidthInt, nameHeight + HUDLayoutSettings.Padding / 2), parent.Content.RectTransform), DisplayName, textAlignment: Alignment.CenterLeft, font: GUI.LargeFont) { CanBeFocused = false };
+            submarineNameText.RectTransform.MinSize = new Point(0, (int)submarineNameText.TextSize.Y);
+            var submarineClassText = new GUITextBlock(new RectTransform(new Point(leftPanelWidthInt, classHeight), parent.Content.RectTransform), className, textAlignment: Alignment.CenterLeft, font: GUI.SubHeadingFont) { CanBeFocused = false };
+            submarineClassText.RectTransform.MinSize = new Point(0, (int)submarineClassText.TextSize.Y);
+>>>>>>> upstream/master
 
             Vector2 realWorldDimensions = Dimensions * Physics.DisplayToRealWorldRatio;
             if (realWorldDimensions != Vector2.Zero)
             {
                 string dimensionsStr = TextManager.GetWithVariables("DimensionsFormat", new string[2] { "[width]", "[height]" }, new string[2] { ((int)realWorldDimensions.X).ToString(), ((int)realWorldDimensions.Y).ToString() });
 
+<<<<<<< HEAD
                 var dimensionsText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), descriptionBox.Content.RectTransform),
+=======
+                var dimensionsText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), parent.Content.RectTransform),
+>>>>>>> upstream/master
                     TextManager.Get("Dimensions"), textAlignment: Alignment.TopLeft, font: font, wrap: true)
                 { CanBeFocused = false };
                 new GUITextBlock(new RectTransform(new Vector2(rightPanelWidth, 0.0f), dimensionsText.RectTransform, Anchor.TopRight, Pivot.TopLeft),
@@ -84,7 +134,11 @@ namespace Barotrauma
 
             if (RecommendedCrewSizeMax > 0)
             {
+<<<<<<< HEAD
                 var crewSizeText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), descriptionBox.Content.RectTransform),
+=======
+                var crewSizeText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), parent.Content.RectTransform),
+>>>>>>> upstream/master
                     TextManager.Get("RecommendedCrewSize"), textAlignment: Alignment.TopLeft, font: font, wrap: true)
                 { CanBeFocused = false };
                 new GUITextBlock(new RectTransform(new Vector2(rightPanelWidth, 0.0f), crewSizeText.RectTransform, Anchor.TopRight, Pivot.TopLeft),
@@ -95,7 +149,11 @@ namespace Barotrauma
 
             if (!string.IsNullOrEmpty(RecommendedCrewExperience))
             {
+<<<<<<< HEAD
                 var crewExperienceText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), descriptionBox.Content.RectTransform),
+=======
+                var crewExperienceText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), parent.Content.RectTransform),
+>>>>>>> upstream/master
                     TextManager.Get("RecommendedCrewExperience"), textAlignment: Alignment.TopLeft, font: font, wrap: true)
                 { CanBeFocused = false };
                 new GUITextBlock(new RectTransform(new Vector2(rightPanelWidth, 0.0f), crewExperienceText.RectTransform, Anchor.TopRight, Pivot.TopLeft),
@@ -106,7 +164,11 @@ namespace Barotrauma
 
             if (RequiredContentPackages.Any())
             {
+<<<<<<< HEAD
                 var contentPackagesText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), descriptionBox.Content.RectTransform),
+=======
+                var contentPackagesText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), parent.Content.RectTransform),
+>>>>>>> upstream/master
                     TextManager.Get("RequiredContentPackages"), textAlignment: Alignment.TopLeft, font: font)
                 { CanBeFocused = false };
                 new GUITextBlock(new RectTransform(new Vector2(rightPanelWidth, 0.0f), contentPackagesText.RectTransform, Anchor.TopRight, Pivot.TopLeft),
@@ -118,7 +180,11 @@ namespace Barotrauma
             // show what game version the submarine was created on
             if (!IsVanillaSubmarine() && GameVersion != null)
             {
+<<<<<<< HEAD
                 var versionText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), descriptionBox.Content.RectTransform),
+=======
+                var versionText = new GUITextBlock(new RectTransform(new Vector2(leftPanelWidth, 0), parent.Content.RectTransform),
+>>>>>>> upstream/master
                         TextManager.Get("serverlistversion"), textAlignment: Alignment.TopLeft, font: font, wrap: true)
                 { CanBeFocused = false };
                 new GUITextBlock(new RectTransform(new Vector2(rightPanelWidth, 0.0f), versionText.RectTransform, Anchor.TopRight, Pivot.TopLeft),
@@ -128,6 +194,7 @@ namespace Barotrauma
                 versionText.RectTransform.MinSize = new Point(0, versionText.Children.First().Rect.Height);
             }
 
+<<<<<<< HEAD
             GUITextBlock.AutoScaleAndNormalize(descriptionBox.Content.Children.Where(c => c is GUITextBlock).Cast<GUITextBlock>());
 
             //space
@@ -144,6 +211,10 @@ namespace Barotrauma
             {
                 CanBeFocused = false
             };
+=======
+            submarineNameText.AutoScaleHorizontal = true;
+            GUITextBlock.AutoScaleAndNormalize(parent.Content.Children.Where(c => c is GUITextBlock && c != submarineNameText).Cast<GUITextBlock>());
+>>>>>>> upstream/master
         }
     }
 }
